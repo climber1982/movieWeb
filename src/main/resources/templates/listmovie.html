@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>电影购票</title>
+</head>
+<body>
+   <div align="center">
+        <table border="1">
+            <tr>
+                <td>序号</td>
+                <td>电影名字</td>
+                <td>价格</td>
+                <td>数量</td>
+                <td>操作</td>
+            </tr>
+            <tr th:each="ticket,uk:${listTiket}">
+                <td th:text="${ticket.index}"></td>
+                <td th:text="${ticket.movieName}"></td>
+                <td th:text="${ticket.tickePrice}"></td>
+                <td th:text="${ticket.tickeNum}"></td>
+                <td>
+                  <a th:href="@{/gotoOrder(index=${ticket.index})}">购买</a>/
+                </td>
+            </tr>
+        </table>
+   </div>
+</body>
+</html>

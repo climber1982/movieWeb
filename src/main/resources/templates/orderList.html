@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>订单查询</title>
+</head>
+<body>
+   <div align="center">
+        <table border="1">
+            <tr>
+                <td>订单编号</td>
+                <td>电影名字</td>
+                <td>价格</td>
+                <td>数量</td>
+                <td>状态</td>
+                <td>操作</td>
+            </tr>
+            <tr th:each="order,uk:${orderList}">
+                <td th:text="${order.orderNum}"></td>
+                <td th:text="${order.movieName}"></td>
+                <td th:text="${order.tickePrice}"></td>
+                <td th:text="${order.tickeNum}"></td>
+                <td th:if="${order.tag} eq 1">已付款</td>
+                <td th:if="${order.tag} eq 0">未付款</td>
+                <td th:if="${order.tag} eq 0">
+                    <a th:href="@{/gotoPay(orderNum=${order.orderNum})}">付款</a>
+                </td>
+            </tr>
+        </table>
+   </div>
+</body>
+</html>
