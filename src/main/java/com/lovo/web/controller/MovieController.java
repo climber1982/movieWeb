@@ -1,15 +1,20 @@
 package com.lovo.web.controller;
 
+import com.lovo.web.entity.OrderEntity;
 import com.lovo.web.entity.TicketEntity;
+import com.lovo.web.service.ITicketLService;
 import com.lovo.web.service.ITicketService;
+import com.lovo.web.util.StringUtil;
 import com.lovo.web.vo.OrderVo;
 import com.lovo.web.vo.TicketVo;
+import com.lovo.web.vo.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +22,8 @@ import java.util.List;
 public class MovieController {
     @Autowired
     private ITicketService ticketService;
-
+    @Autowired
+    private ITicketLService ticketLService;
     @RequestMapping("getListTicket")
     public ModelAndView getListTicket(){
         ModelAndView mv=new ModelAndView("listmovie");
@@ -27,18 +33,26 @@ public class MovieController {
         return mv;
     }
     @RequestMapping("gotoOrder")
-    public ModelAndView  gotoOrder(int index){
+    public ModelAndView  gotoOrder(int index, HttpServletRequest request){
         ModelAndView mv=new ModelAndView("order");
-        //根据index去查询出电影信息
-        //电影票预库存
-        //生成订单
-        OrderVo vo=new OrderVo();
-        vo.setIndex(index);
-        vo.setMovieName("复仇者联盟1");
-        vo.setOrderNum("2020414001");
-        vo.setTickePrice(81);
-        vo.setTickeNum(1);
-        mv.addObject("orderInfo",vo);
+        UserVo userVo= (UserVo) request.getSession().getAttribute("user");
+
+        //根据编号查询出电影票对象
+        TicketEntity ticketEntity=ticketService.ticketByIndex(index);
+        //生成订单保存到服务器
+        OrderEntity orderEntity=new OrderEntity();
+        orderEntity.setOrderNum(System.currentTimeMillis()+"-"+index);
+        orderEntity.setIndex(index);
+        orderEntity.setMovieName(ticketEntity.getMovieName());
+        orderEntity.setTag(StringUtil.NO_PAY);
+        orderEntity.setTickePrice(ticketEntity.getTicketPrice());
+        orderEntity.setUserName(userVo.getUserName());
+        orderEntity.setTickeNum(1);
+        //保存订单
+        ticketService.savaOrder(orderEntity);
+        //修改库存
+        ticketService.updateTicketNum(index);
+        mv.addObject("orderInfo",orderEntity);
 
         return  mv;
     }
@@ -47,7 +61,9 @@ public class MovieController {
     public ModelAndView gotoPay(String orderNum){
         ModelAndView mv=new ModelAndView();
         //根据订单编号，查询出订单内容
+    OrderEntity orderEntity=   ticketService.getOrderEntityByOrderNum(orderNum);
        //调用付款接口进行付款
+
        //修改订单状态为已付款
          RedirectView rv=new RedirectView("orderList");
          mv.setView(rv);
