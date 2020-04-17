@@ -20,8 +20,10 @@
                 <td th:text="${order.movieName}"></td>
                 <td th:text="${order.tickePrice}"></td>
                 <td th:text="${order.tickeNum}"></td>
+                <td th:if="${order.tag} eq 2">已出票</td>
                 <td th:if="${order.tag} eq 1">已付款</td>
                 <td th:if="${order.tag} eq 0">未付款</td>
+
                 <td th:if="${order.tag} eq 0">
                     <a th:href="@{/gotoPay(orderNum=${order.orderNum})}">付款</a>
                 </td>

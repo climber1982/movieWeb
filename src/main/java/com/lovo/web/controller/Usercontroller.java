@@ -1,11 +1,17 @@
 package com.lovo.web.controller;
 
+import com.lovo.web.entity.OrderEntity;
 import com.lovo.web.entity.UserEntity;
 import com.lovo.web.service.IUserService;
+import com.lovo.web.service.impl.MQSendService;
 import com.lovo.web.util.StringUtil;
 import com.lovo.web.vo.TicketVo;
 import com.lovo.web.vo.UserVo;
+import com.rabbitmq.client.Channel;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -13,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +50,7 @@ public class Usercontroller {
 
          return  mv;
     }
+
 
 
 

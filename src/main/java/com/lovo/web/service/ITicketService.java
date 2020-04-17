@@ -32,6 +32,17 @@ public interface ITicketService {
      * @param orderNum
      * @return
      */
-    @RequestMapping("OrderEntityByOrderNum/{orderNum}")
+    @RequestMapping("getOrderEntityByOrderNum/{orderNum}")
     public OrderEntity getOrderEntityByOrderNum(@PathVariable("orderNum") String orderNum);
+     //修改订单
+    @RequestMapping("updateOrderBynum/{orderNum}/{tag}")
+    public void updateOrderBynum(@PathVariable("orderNum")String orderNum,
+                                 @PathVariable("tag")int tag);
+
+    /**
+     * 查询所有订单
+     * @return
+     */
+    @RequestMapping("findAllOrder")
+    public List<OrderEntity> findAllOrder();
 }

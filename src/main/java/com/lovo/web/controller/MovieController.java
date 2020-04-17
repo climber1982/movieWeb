@@ -2,11 +2,9 @@ package com.lovo.web.controller;
 
 import com.lovo.web.entity.OrderEntity;
 import com.lovo.web.entity.TicketEntity;
-import com.lovo.web.service.ITicketLService;
 import com.lovo.web.service.ITicketService;
+import com.lovo.web.service.impl.MQSendService;
 import com.lovo.web.util.StringUtil;
-import com.lovo.web.vo.OrderVo;
-import com.lovo.web.vo.TicketVo;
 import com.lovo.web.vo.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,7 +13,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -23,7 +20,8 @@ public class MovieController {
     @Autowired
     private ITicketService ticketService;
     @Autowired
-    private ITicketLService ticketLService;
+    private MQSendService mQSendService;
+
     @RequestMapping("getListTicket")
     public ModelAndView getListTicket(){
         ModelAndView mv=new ModelAndView("listmovie");
@@ -59,12 +57,16 @@ public class MovieController {
 
    @RequestMapping("gotoPay")
     public ModelAndView gotoPay(String orderNum){
-        ModelAndView mv=new ModelAndView();
+        ModelAndView mv=new ModelAndView("login");
+        if(null==orderNum){
+            return mv;
+        }
         //根据订单编号，查询出订单内容
     OrderEntity orderEntity=   ticketService.getOrderEntityByOrderNum(orderNum);
-       //调用付款接口进行付款
-
-       //修改订单状态为已付款
+    //MQ调用付款接口进行付款,   修改订单状态为已付款
+       mQSendService.sendPay(orderEntity);
+     //出票，修改订单状态为已出票
+       mQSendService.sendTicket(orderEntity);
          RedirectView rv=new RedirectView("orderList");
          mv.setView(rv);
         return  mv;
@@ -77,20 +79,8 @@ public class MovieController {
     @RequestMapping("orderList")
     public  ModelAndView  orderList(){
         ModelAndView mv=new ModelAndView("orderList");
-        List<OrderVo> listvo=new ArrayList<>();
-        for (int i=1;i<5;i++) {
-            OrderVo vo = new OrderVo();
-            vo.setMovieName("复仇者联盟"+i);
-            vo.setOrderNum("2020414001"+i);
-            vo.setTickePrice(81);
-            vo.setTickeNum(1);
-            if(i%2==0) {
-                vo.setTag(0);
-            }else {
-                vo.setTag(1);
-            }
-            listvo.add(vo);
-        }
+        List<OrderEntity> listvo=
+                      ticketService.findAllOrder();
         mv.addObject("orderList",listvo);
         return mv;
     }

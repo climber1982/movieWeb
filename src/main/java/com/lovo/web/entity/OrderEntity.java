@@ -1,8 +1,9 @@
 package com.lovo.web.entity;
 
 
+import java.io.Serializable;
 
-public class OrderEntity {
+public class OrderEntity implements Serializable {
 
     private String orderId;
 

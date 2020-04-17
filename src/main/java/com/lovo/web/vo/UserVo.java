@@ -1,9 +1,11 @@
 package com.lovo.web.vo;
 
+import java.io.Serializable;
+
 /**
  * 用户VO
  */
-public class UserVo {
+public class UserVo  {
 
     private String userName;
     private String password;

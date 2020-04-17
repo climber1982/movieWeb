@@ -1,7 +1,11 @@
 package com.lovo.web.service.impl;
 
 import com.lovo.web.entity.OrderEntity;
+import com.lovo.web.service.ITicketService;
+import com.lovo.web.util.StringUtil;
+import com.lovo.web.vo.UserVo;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +16,26 @@ import org.springframework.stereotype.Service;
 public class MQSendService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
+    @Autowired
+     private ITicketService ticketService;
     //消息确认
     RabbitTemplate.ConfirmCallback confirmCallback= new  RabbitTemplate.ConfirmCallback(){
 
         public void confirm(CorrelationData correlationData, boolean b, String s) {
-            System.out.println("correlationData="+correlationData);
-            System.out.println("b="+b);
-            System.out.println("s="+s);
-            //写业务  如果 b=true 代表数据已经放入到队列，根据correlationData 修改本地数据tag=1()
+               //发送成功把
+        String tag=    correlationData.getReturnedMessage()
+                    .getMessageProperties()
+                    .getHeaders()
+                    .get("tag").toString();
+         String id=correlationData.getId();
+          if(tag.equals("pay")){
+              //支付的回复，修改本地数据库为成功
+              ticketService.updateOrderBynum(id, StringUtil.PAY);
+          }else if(tag.equals("ticket")){
+              //出票成功
+              //支付的回复，修改本地数据库为成功
+              ticketService.updateOrderBynum(id, StringUtil.TICKET_YES);
+          }
         }
     };
     //回退
@@ -41,13 +56,26 @@ public class MQSendService {
         rabbitTemplate.setReturnCallback(returnCallback);
         //把订单号做为数据关联
         CorrelationData correlationData=new CorrelationData(orderEntity.getOrderNum());
-
+        MessageProperties properties=new MessageProperties();
+        properties.setHeader("tag","pay");
+        Message message=new Message(null,properties);
+        correlationData.setReturnedMessage(message);
         //发送
         rabbitTemplate.convertAndSend("directExchange","direct.payQueue",orderEntity,correlationData);
     }
      //出票
     public void sendTicket(OrderEntity orderEntity){
-
+        rabbitTemplate.setMandatory(true);//开启消息确认
+        rabbitTemplate.setConfirmCallback(confirmCallback);
+        rabbitTemplate.setReturnCallback(returnCallback);
+        //把订单号做为数据关联
+        CorrelationData correlationData=new CorrelationData(orderEntity.getOrderNum());
+        MessageProperties properties=new MessageProperties();
+        properties.setHeader("tag","ticket");
+        Message message=new Message(null,properties);
+        correlationData.setReturnedMessage(message);
+        //发送
+        rabbitTemplate.convertAndSend("directExchange","direct.movieQueue",orderEntity,correlationData);
     }
 
 

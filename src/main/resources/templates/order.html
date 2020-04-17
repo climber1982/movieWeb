@@ -11,7 +11,7 @@
           <li th:text="|电影名：*{movieName}|"></li>
           <li th:text="|票价：*{tickePrice}|"></li>
           <li th:text="|数量：*{tickeNum}"|></li>
-          <li><a th:href="@{/gotoPay}">付款</a></li>
+          <li><a th:href="@{/gotoPay(orderNum=${orderInfo.orderNum})}">付款</a></li>
       </ul>
 </div>
 </body>
